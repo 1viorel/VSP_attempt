@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { parseString } from 'xml2js';
+
+export interface Rate {
+  currency: string;
+  rate: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -10,21 +14,17 @@ import { parseString } from 'xml2js';
 export class XmlService {
   constructor(private http: HttpClient) {}
 
-  fetchData(xmlFilePath: string): Observable<any[]> {
+  fetchData(xmlFilePath: string): Observable<Rate[]> {
     return this.http.get(xmlFilePath, { responseType: 'text' }).pipe(
-      map(response => {
-        let parsedData: any[] | undefined; // Assign an initial value of undefined
-        parseString(response, (err, result) => {
-          if (err) {
-            console.error(err);
-          } else {
-            const dataSet = result['DataSet'];
-            if (dataSet && dataSet['Cube'] && dataSet['Cube']['$'] && dataSet['Cube']['$']['date'] && dataSet['Cube']['Rate']) {
-              parsedData = dataSet['Cube']['Rate'];
-            }
-          }
-        });
-        return parsedData || []; // Return an empty array if no data is available
+      map((response: string) => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(response, 'text/xml');
+        const rateElements = Array.from(xmlDoc.getElementsByTagName('Rate'));
+
+        return rateElements.map(rateElement => ({
+          currency: rateElement.getAttribute('currency') || '',
+          rate: rateElement.textContent || ''
+        }));
       })
     );
   }
