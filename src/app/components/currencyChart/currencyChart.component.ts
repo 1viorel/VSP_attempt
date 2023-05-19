@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ChartDataset, ChartOptions } from 'chart.js';
+import {Chart, ChartDataset, ChartOptions} from 'chart.js';
+import { Colors } from 'chart.js';
 
-
+Chart.defaults.backgroundColor = '#9BD0F5';
+Chart.defaults.borderColor = '#36A2EB';
+Chart.defaults.color = '#000';
 @Component({
   selector: 'app-currencyChart',
   templateUrl: './currencyChart.component.html',
@@ -12,9 +15,14 @@ export class CurrencyChartComponent implements OnInit {
   public lineChartData: ChartDataset[] = [];
   public lineChartLabels: string[] = [];
   public lineChartOptions: ChartOptions = {
-    responsive: true
+    responsive: true,
+    scales :{
+      y: {
+        max: 7
+      }
+    }
   };
-  public lineChartLegend = true;
+  public lineChartLegend = false;
   public lineChartType = 'line';
   public lineChartPlugins = [];
 
@@ -23,6 +31,7 @@ export class CurrencyChartComponent implements OnInit {
 
   ngOnInit() {
     this.fetchData();
+    Chart.register(Colors);
   }
 
   fetchData() {
